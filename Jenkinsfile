@@ -12,7 +12,7 @@ pipeline {
         stage('Build') {
             steps {
                 build 'PES1UG22CS595-1'
-                sh 'g++ ./main/hello1.cpp -o output'
+                sh 'g++ ./main/wrong_output.cpp -o output'
             }
         }
 
