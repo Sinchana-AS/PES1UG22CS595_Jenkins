@@ -1,9 +1,6 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:14'
-        }
-    }
+    agent any  // Use any agent that supports the docker command
+
     stages {
         stage('Clone repository') {
             steps {
@@ -12,23 +9,39 @@ pipeline {
         }
         stage('Install dependencies') {
             steps {
-                sh 'npm install'
+                script {
+                    docker.image('node:14').inside {
+                        sh 'npm install'
+                    }
+                }
             }
         }
         stage('Build application') {
             steps {
-                sh 'npm run build'
+                script {
+                    docker.image('node:14').inside {
+                        sh 'npm run build'
+                    }
+                }
             }
         }
         stage('Test application') {
             steps {
-                sh 'npm test'
+                script {
+                    docker.image('node:14').inside {
+                        sh 'npm test'
+                    }
+                }
             }
         }
         stage('Push Docker image') {
             steps {
-                sh 'docker build -t <user>/<image>:$BUILD_HUMBER .'
-                sh 'docker push <user>/<image>:$BUILD_HUMBER'
+                script {
+                    docker.image('node:14').inside {
+                        sh 'docker build -t <user>/<image>:$BUILD_NUMBER .'
+                        sh 'docker push <user>/<image>:$BUILD_NUMBER'
+                    }
+                }
             }
         }
     }
