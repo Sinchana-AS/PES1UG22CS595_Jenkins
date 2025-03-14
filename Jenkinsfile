@@ -1,48 +1,37 @@
 pipeline {
-    agent any  // Use any agent that supports the docker command
-
+    agent any
     stages {
         stage('Clone repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/cusery/crepo.git'
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[url: 'https://github.com/Sinchana-AS/PES1UG22CS595_Jenkins.git']]])
             }
         }
-        stage('Install dependencies') {
+        
+        stage('Build') {
             steps {
-                script {
-                    docker.image('node:14').inside {
-                        sh 'npm install'
-                    }
-                }
+                build 'PES1UG22CS595-1'
+                sh 'g++ ./main/hello1.cpp -o output'
             }
         }
-        stage('Build application') {
+
+        stage('Test') {
             steps {
-                script {
-                    docker.image('node:14').inside {
-                        sh 'npm run build'
-                    }
-                }
+                sh './output'
             }
         }
-        stage('Test application') {
+
+        stage('Deploy') {
             steps {
-                script {
-                    docker.image('node:14').inside {
-                        sh 'npm test'
-                    }
-                }
+                echo 'deploy'
             }
         }
-        stage('Push Docker image') {
-            steps {
-                script {
-                    docker.image('node:14').inside {
-                        sh 'docker build -t <user>/<image>:$BUILD_NUMBER .'
-                        sh 'docker push <user>/<image>:$BUILD_NUMBER'
-                    }
-                }
-            }
+    }
+
+    post {
+        failure {
+            error 'Pipeline failed'
         }
     }
 }
